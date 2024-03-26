@@ -44,7 +44,8 @@ const createNewNote = asyncHandler(async (req, res) => {
     }
 
     // Create and store the new user 
-    const note = await Note.create({ user, title, text })
+    const noteObject = {user, title, text}
+    const note = await Note.create(noteObject)
 
     if (note) { // Created 
         return res.status(201).json({ message: 'New note created' })
@@ -110,7 +111,7 @@ const deleteNote = asyncHandler(async (req, res) => {
 
     const result = await note.deleteOne()
 
-    const reply = `Note '${result.title}' with ID ${result._id} deleted`
+    const reply = `Note '${note.title}' with ID ${note._id} deleted`
 
     res.json(reply)
 })
