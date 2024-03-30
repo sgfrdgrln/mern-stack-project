@@ -17,6 +17,18 @@ const getAllUsers = asyncHandler(async (req, res) => {
 
     res.json(users);
 })
+const getUser = asyncHandler(async (req, res) => {
+
+    const userID = req.params.id
+ 
+     const user = await User.findById(userID).select('-password').lean()
+ 
+     if(!user) {
+         return res.status(400).json({message: 'User not found'})
+     }
+     res.json(user)
+ })
+ 
 
 // @desc Create new user
 // @route POST /users
@@ -115,10 +127,31 @@ const deleteUser = asyncHandler(async (req, res) => {
     const reply = `User ${user.username} with ID ${user._id} has been deleted`
     res.json(reply)
 })
+const deleteUserById = asyncHandler(async (req, res) => {
+
+    const userID = req.params.id
+ 
+     const user = await User.findById(userID).exec()
+ 
+     if(!user) {
+         return res.status(400).json({message: 'User not found'})
+     }
+     const note = await Note.findOne({user: userID}).lean().exec()
+     if(note) {
+        return res.status(400).json({message: 'User has assigned notes'})
+     }
+     await user.deleteOne()
+
+     const reply = `User ${user.username} with ID ${user._id} has been deleted`
+     res.json(reply)
+ })
+
 
 module.exports = {
     getAllUsers,
     createNewUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    deleteUserById,
+    getUser
 }
