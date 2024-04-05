@@ -4,6 +4,7 @@ const fs = require('fs')
 const multer = require('multer')
 const path = require('path')
 
+// CREATE
 const createEvent = asyncHandler(async (req, res) => {
     try {
         // Get other fields from request body
@@ -39,8 +40,8 @@ const createEvent = asyncHandler(async (req, res) => {
 });
 
 
-
-
+ 
+// READ
 const getAllEvents = asyncHandler(async (req, res) => {
 
     const events = await Event.find()
@@ -78,30 +79,36 @@ const updateEvent = asyncHandler(async (req, res) => {
     const { id, title, description, rtfContent } = req.body;
 
     if (!id || !title || !description || !rtfContent) {
-        return res.status(400).json('All fields required');
+        return res.status(400).json({ message: 'All fields required' });
     }
 
-    const event = await Event.findById(id).exec();
+    try {
+        const event = await Event.findById(id).exec();
 
-    if (!event) {
-        return res.status(400).json('No event found');
+        if (!event) {
+            return res.status(404).json({ message: 'No event found' });
+        }
+
+        let thumbnailPath = event.thumbnail; // Default thumbnail path
+
+        // Check if a new thumbnail is provided
+        if (req.file) {
+            thumbnailPath = req.file.path; // Access thumbnail path from req.file
+        }
+
+        // Update event fields
+        event.title = title;
+        event.description = description;
+        event.rtfContent = rtfContent;
+        event.thumbnail = thumbnailPath;
+
+        const updatedEvent = await event.save();
+
+        res.json({ message: `Event ${updatedEvent.title} updated` });
+    } catch (error) {
+        console.error('Error updating event:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
-
-    const { thumbnail } = req.file; // Access thumbnail from req.file
-
-    // Update event fields
-    event.title = title;
-    event.description = description;
-    event.rtfContent = rtfContent;
-
-    // Check if a new thumbnail is provided and update it
-    if (thumbnail) {
-        event.thumbnail = thumbnail.path; // Assuming the thumbnail path is stored in req.file.path
-    }
-
-    const updatedEvent = await event.save();
-
-    res.json({ message: `Event ${updatedEvent.title} updated` });
 });
 const deleteEvent = asyncHandler(async (req, res) => {
 
