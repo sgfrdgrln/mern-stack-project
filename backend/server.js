@@ -24,10 +24,14 @@ app.use(express.json())
 app.use(cookieParser())
 
 app.use('/', express.static(path.join(__dirname, 'public')))
-
+app.get('/get-upload', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'sample.html'));
+  });
+app.use('/uploads', express.static('uploads'))
 app.use('/', require('./routes/root'))
 app.use('/auth', require('./routes/authRoutes'))
 app.use('/users', require('./routes/userRoutes'))
+app.use('/events', require('./routes/eventRoutes'))
 app.use('/notes', require('./routes/noteRoutes'))
 
 

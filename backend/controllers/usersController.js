@@ -106,26 +106,25 @@ const updateUser = asyncHandler(async (req, res) => {
 // @desc Delete a user
 // @route DELETE /users
 // @access Private
-const deleteUser = asyncHandler(async (req, res) => {
-    const { id } = req.body;
+const deleteUser = asyncHandler(async(req, res) => {
+    const {id} = req.body
 
-    // Confirm data
-    if (!id) {
-        return res.status(400).json({ message: 'User ID Required' })
+    if(!id) {
+        return res.status(400).json({message: 'User ID required'})
     }
-
-    // Does the user still have assigned notes?
-    const note = await Note.findOne({ user: id }).lean().exec();
+    const note = await Note.findOne({user: id}).lean().exec()
     if (note) {
-        return res.status(400).json({ message: 'User has assigned notes' })
+        return res.status(400).json({message: 'User has assigned notes'})
     }
     const user = await User.findById(id).exec()
     if(!user) {
         return res.status(400).json({message: 'No user found'})
     }
     await user.deleteOne()
+
     const reply = `User ${user.username} with ID ${user._id} has been deleted`
     res.json(reply)
+
 })
 const deleteUserById = asyncHandler(async (req, res) => {
 
