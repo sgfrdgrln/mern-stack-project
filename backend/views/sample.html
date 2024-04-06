@@ -47,6 +47,8 @@
   </table>
 
   <script>
+
+    
     // Function to delete an event
     const deleteEvent = async (eventId) => {
       try {
@@ -68,7 +70,52 @@
       }
     };
 
+    const openUpdateModal = (eventId, title, description, rtfContent) => {
+      document.getElementById('updateEventId').value = eventId;
+      document.getElementById('updateTitle').value = title;
+      document.getElementById('updateDescription').value = description;
+      document.getElementById('updateRTFContent').value = rtfContent;
+      const updateModal = new bootstrap.Modal(document.getElementById('updateEventModal'));
+      updateModal.show();
+    };
+
+    const handleUpdateEventSubmit = async () => {
+      const form = document.getElementById('updateEventForm');
+      const eventId = form.querySelector('#updateEventId').value; // Get event ID from the form
   
+      const formData = new FormData(form);
+      formData.append('id', eventId); // Append event ID to the form data
+
+
+  try {
+    const response = await fetch(`/events/`, {
+      method: 'PATCH',
+      body: formData
+    });
+    if (response.ok) {
+      // Close the modal after successful update
+      const updateModal = bootstrap.Modal.getInstance(document.getElementById('updateEventModal'));
+      updateModal.hide();
+      // Refresh the events table after update
+      fetchEvents();
+    } else {
+      console.error('Failed to update event');
+    }
+  } catch (error) {
+    console.error('Error updating event:', error);
+  }
+};
+
+// Add event listener to update event form submission
+const updateEventForm = async () => {document.getElementById('updateEventForm')
+updateEventForm.addEventListener('submit', handleUpdateEventSubmit)}
+
+
+
+
+    
+
+    
 
     // Function to fetch events data from backend
     const fetchEvents = () => {
@@ -86,7 +133,7 @@
               <td>${event.rtfContent}</td>
               <td>
                 <button class="btn btn-danger" onclick="deleteEvent('${event._id}')">Delete</button>
-                <button class="btn btn-primary">Update</button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateEventModal" onclick="openUpdateModal('${event._id}', '${event.title}', '${event.description}', '${event.rtfContent}')">Update</button>
               </td>
             `;
             eventsBody.appendChild(row);
@@ -97,9 +144,50 @@
         });
     };
 
+   
+
     // Initial fetch of events
     fetchEvents();
+    
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+  <!-- Update Event Modal -->
+  <div class="modal fade" id="updateEventModal" tabindex="-1" aria-labelledby="updateEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="updateEventModalLabel">Update Event</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="updateEventForm" enctype="multipart/form-data">
+            <input type="hidden" id="updateEventId" name="eventId">
+            <div class="mb-3">
+              <label for="updateThumbnail" class="form-label">Thumbnail</label>
+              <input type="file" class="form-control" id="updateThumbnail" name="thumbnail" accept="image/jpeg, image/png">
+            </div>
+            <div class="mb-3">
+              <label for="updateTitle" class="form-label">Title</label>
+              <input type="text" class="form-control" id="updateTitle" name="title" required>
+            </div>
+            <div class="mb-3">
+              <label for="updateDescription" class="form-label">Description</label>
+              <textarea class="form-control" id="updateDescription" name="description" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="updateRTFContent" class="form-label">RTF Content</label>
+              <textarea class="form-control" id="updateRTFContent" name="rtfContent" required></textarea>
+            </div>
+            <div class="modal-footer">
+              <button type="button" onclick="closeUpdateModal()"class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" onclick="handleUpdateEventSubmit()"class="btn btn-primary">Save changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

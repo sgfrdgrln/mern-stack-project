@@ -15,7 +15,7 @@ router.get('/events/:id', (req, res) => {
 router.route('/')
     .get(eventsController.getAllEvents)
     .post(upload.single('thumbnail'), eventsController.createEvent) // Apply upload middleware only to the createEvent route
-    .patch(eventsController.updateEvent)
+    .patch(upload.single('thumbnail'), eventsController.updateEvent)
     .delete(eventsController.deleteEvent)
 
 // router.route('/:id')

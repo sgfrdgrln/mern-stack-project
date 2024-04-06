@@ -93,6 +93,7 @@ const updateEvent = asyncHandler(async (req, res) => {
 
         // Check if a new thumbnail is provided
         if (req.file) {
+            fs.unlinkSync(thumbnailPath); // removes the old file
             thumbnailPath = req.file.path; // Access thumbnail path from req.file
         }
 
