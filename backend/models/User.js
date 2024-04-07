@@ -9,10 +9,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    roles: [{
-        type: String,
-        default: "Employee"
-    }],
+    roles: {
+        User: {
+            type: Number,
+            default: 2001 // User role value 
+        },
+        Editor: Number,
+        Admin: Number
+    },
     active: {
         type: Boolean,
         default: true

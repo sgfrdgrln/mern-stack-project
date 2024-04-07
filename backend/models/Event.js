@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 
+
 // Define the event schema
 const eventSchema = new mongoose.Schema({
     title: {
@@ -17,6 +18,10 @@ const eventSchema = new mongoose.Schema({
     thumbnail: {
         type: String, // Store the path to the image file
         required: true
+    },
+    eventDateCreated: {
+        type: Date,
+        default: Date.now  // Automatically set to the current date/time
     }
 });
 
