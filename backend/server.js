@@ -27,6 +27,9 @@ app.use('/', express.static(path.join(__dirname, 'public')))
 app.get('/auth', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'auth.html'));
   });
+app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'register.html'));
+})
 app.get('/get-upload', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'sample.html'));
   });
