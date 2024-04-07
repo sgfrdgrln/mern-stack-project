@@ -4,8 +4,9 @@ const fs = require('fs')
 const multer = require('multer')
 const path = require('path')
 
+class EventController {
 // CREATE
-const createEvent = asyncHandler(async (req, res) => {
+ static createEvent = asyncHandler(async (req, res) => {
     try {
         // Get other fields from request body
         const { title, description, rtfContent } = req.body;
@@ -42,15 +43,15 @@ const createEvent = asyncHandler(async (req, res) => {
 
  
 // READ
-const getAllEvents = asyncHandler(async (req, res) => {
+static getAllEvents = asyncHandler(async (req, res) => {
 
-    const events = await Event.find()
+    const events = await Event.find();
 
     if(!events?.length) {
-        return res.status(400).json('No events found')
+        return res.status(400).json('No events found');
     }
-    res.json(events)
-})
+    res.json(events);
+});
 
 // const createEvent = asyncHandler(async (req, res) => {
 
@@ -75,12 +76,20 @@ const getAllEvents = asyncHandler(async (req, res) => {
 //     }
 
 // })
-const updateEvent = asyncHandler(async (req, res) => {
+
+// UPDATE
+static updateEvent = asyncHandler(async (req, res) => {
     const { id, title, description, rtfContent } = req.body;
 
     if (!id || !title || !description || !rtfContent) {
         return res.status(400).json({ message: 'All fields required' });
     }
+
+    const duplicate = await Event.findOne({title}).lean().exec()
+
+        if(duplicate && duplicate?._id.toString() !== id) {
+            return res.status(409).json({message: 'Duplicate title event'})
+        }
 
     try {
         const event = await Event.findById(id).exec();
@@ -97,6 +106,8 @@ const updateEvent = asyncHandler(async (req, res) => {
             thumbnailPath = req.file.path; // Access thumbnail path from req.file
         }
 
+        
+
         // Update event fields
         event.title = title;
         event.description = description;
@@ -111,17 +122,18 @@ const updateEvent = asyncHandler(async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
-const deleteEvent = asyncHandler(async (req, res) => {
+// DELETE
+static deleteEvent = asyncHandler(async (req, res) => {
 
-    const {id} = req.body
+    const {id} = req.body;
 
     if(!id) {
-        return res.status(400).json({message: 'Event ID required'})
+        return res.status(400).json({message: 'Event ID required'});
     }
 
     const event = await Event.findById(id).exec()
     if(!event) {
-        return res.status(400).json({message: 'No event found'})
+        return res.status(400).json({message: 'No event found'});
     }
 
     const imagePath = path.join( './', event.thumbnail);
@@ -132,11 +144,11 @@ const deleteEvent = asyncHandler(async (req, res) => {
         console.error('Error deleting image file:', error);
     }
 
-    await event.deleteOne()
+    await event.deleteOne();
 
-    const reply = `Event ${event.title} with ID ${event._id} has been deleted`
-    res.json(reply)
-})
+    const reply = `Event ${event.title} with ID ${event._id} has been deleted`;
+    res.json(reply);
+});
 // const updateEventById = asyncHandler(async (req, res) => {
 //     const eventId = req.params.id;
 
@@ -196,14 +208,7 @@ const deleteEvent = asyncHandler(async (req, res) => {
 
 //     res.json(event);
 // });
-
-
-
-module.exports = {
-    getAllEvents,
-    createEvent,
-    updateEvent,
-    deleteEvent
-    // getEventById,
-    // updateEventById
 }
+
+
+module.exports = EventController;

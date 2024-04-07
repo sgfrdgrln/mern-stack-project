@@ -3,20 +3,20 @@ const router = express.Router()
 const eventsController = require('../controllers/eventsController')
 const verifyJWT = require('../middleware/verifyJWT')
 const upload = require('../middleware/upload')
+const ROLES_LIST = require('../config/roles_list')
+const verifyRoles = require('../middleware/verifyRoles')
 
-//router.use(verifyJWT)
 
-router.get('/events/:id', (req, res) => {
-    const id = req.params.id;
-    res.sendFile(path.join(__dirname, '../views', 'updateEvent.html'));
-});
+
 
 
 router.route('/')
     .get(eventsController.getAllEvents)
-    .post(upload.single('thumbnail'), eventsController.createEvent) // Apply upload middleware only to the createEvent route
-    .patch(upload.single('thumbnail'), eventsController.updateEvent)
-    .delete(eventsController.deleteEvent)
+    router.use(verifyJWT)
+router.route('/')
+    .post(verifyRoles(ROLES_LIST.Admin), upload.single('thumbnail'), eventsController.createEvent) // Apply upload middleware only to the createEvent route
+    .patch(verifyRoles(ROLES_LIST.Admin), upload.single('thumbnail'), eventsController.updateEvent)
+    .delete(verifyRoles(ROLES_LIST.Admin), eventsController.deleteEvent)
 
 // router.route('/:id')
 //     .get(usersController.getUser)
