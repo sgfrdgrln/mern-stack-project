@@ -1,13 +1,16 @@
 const Event = require('../models/Event')
 const asyncHandler = require('express-async-handler')
 const fs = require('fs')
-
+const imageProcessing = require('../utils/imageProcessing')
 const path = require('path')
 
 class EventController {
 // CREATE
- static createEvent = asyncHandler(async (req, res) => {
+static createEvent = asyncHandler(async (req, res) => {
     try {
+        // Process the image before creating the event
+        await imageProcessing(req, res); // <-- Here's the addition
+
         // Get other fields from request body
         const { title, description, rtfContent } = req.body;
 
@@ -15,14 +18,13 @@ class EventController {
         const duplicate = await Event.findOne({ title }).lean().exec();
         if (duplicate) {
             // If a duplicate title is found, delete the uploaded file
-            if (req.file && fs.existsSync(req.file.path)) {
+            if (req.processedImage) {
                 fs.unlinkSync(req.processedImage ? `uploads/${req.processedImage}` : null);
             }
             return res.status(400).json({ message: 'Duplicate title event' });
         }
 
         // Get uploaded file path (if any)
-       
         const thumbnail = req.processedImage ? `uploads/${req.processedImage}` : null;
 
         // Create new event in database
@@ -36,17 +38,14 @@ class EventController {
 
         if (event) {
             res.status(201).json({ message: 'Event created successfully', event });
+        } else {
+            res.status(400).json({ message: 'Invalid event data received' });
         }
-        else {
-            res.status(400).json({message: 'Invalid event data received'})
-        }
-
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
-
 
  
 // READ
@@ -92,13 +91,21 @@ static updateEvent = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: 'All fields required' });
     }
 
-    const duplicate = await Event.findOne({title}).lean().exec()
+    try {
+        // Process the image before updating the event
 
-        if(duplicate && duplicate?._id.toString() !== id) {
-            return res.status(409).json({message: 'Duplicate title event'})
+        const duplicate = await Event.findOne({ title }).lean().exec();
+
+        if (duplicate && duplicate._id.toString() !== id) {
+            return res.status(409).json({ message: 'Duplicate title event' });
         }
 
-    try {
+        if (req.file) {
+            await imageProcessing(req, res); // <-- Process the image if a new one is provided
+        }
+
+       
+
         const event = await Event.findById(id).exec();
 
         if (!event) {
@@ -110,10 +117,8 @@ static updateEvent = asyncHandler(async (req, res) => {
         // Check if a new thumbnail is provided
         if (req.file) {
             fs.unlinkSync(thumbnailPath); // removes the old file
-            thumbnailPath = req.file.path; // Access thumbnail path from req.file
+            thumbnailPath = req.processedImage ?  `uploads/${req.processedImage}` : null; // Access processed image filename from req object
         }
-
-        
 
         // Update event fields
         event.title = title;

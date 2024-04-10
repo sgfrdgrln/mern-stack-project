@@ -3,7 +3,6 @@ const router = express.Router()
 const eventsController = require('../controllers/eventsController')
 const verifyJWT = require('../middleware/verifyJWT')
 const uploads = require('../middleware/upload')
-const imageProcessing = require('../utils/imageProcessing')
 const ROLES_LIST = require('../config/roles_list')
 const verifyRoles = require('../middleware/verifyRoles')
 
@@ -15,8 +14,8 @@ router.route('/')
     .get(eventsController.getAllEvents)
     router.use(verifyJWT)
 router.route('/')
-    .post(verifyRoles(ROLES_LIST.Admin), uploads.single('thumbnail'), imageProcessing, eventsController.createEvent) // Apply upload middleware only to the createEvent route
-    .patch(verifyRoles(ROLES_LIST.Admin), uploads.single('thumbnail'), imageProcessing, eventsController.updateEvent)
+    .post(verifyRoles(ROLES_LIST.Admin), uploads.single('thumbnail'), eventsController.createEvent) // Apply upload middleware only to the createEvent route
+    .patch(verifyRoles(ROLES_LIST.Admin), uploads.single('thumbnail'), eventsController.updateEvent)
     .delete(verifyRoles(ROLES_LIST.Admin), eventsController.deleteEvent)
 
 // router.route('/:id')

@@ -22,6 +22,12 @@ const imageProcessing = async (req, res) => {
         await sharp(req.file.buffer)
         .resize({width: 615, height: 350})
         .toFile(`./uploads/${filename}`)
+        console.log('Image processed successfully:', filename);
+        req.processedImage = filename;
+
+    
+
+   
     }
     catch (err) {
         console.log('Error while processing image')
