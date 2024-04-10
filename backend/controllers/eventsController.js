@@ -1,7 +1,7 @@
 const Event = require('../models/Event')
 const asyncHandler = require('express-async-handler')
 const fs = require('fs')
-const multer = require('multer')
+
 const path = require('path')
 
 class EventController {
@@ -16,13 +16,14 @@ class EventController {
         if (duplicate) {
             // If a duplicate title is found, delete the uploaded file
             if (req.file && fs.existsSync(req.file.path)) {
-                fs.unlinkSync(req.file.path);
+                fs.unlinkSync(req.processedImage ? `uploads/${req.processedImage}` : null);
             }
             return res.status(400).json({ message: 'Duplicate title event' });
         }
 
         // Get uploaded file path (if any)
-        const thumbnail = req.file ? req.file.path : null;
+       
+        const thumbnail = req.processedImage ? `uploads/${req.processedImage}` : null;
 
         // Create new event in database
         const event = new Event({
@@ -33,7 +34,13 @@ class EventController {
         });
         await event.save();
 
-        res.status(201).json({ message: 'Event created successfully', event });
+        if (event) {
+            res.status(201).json({ message: 'Event created successfully', event });
+        }
+        else {
+            res.status(400).json({message: 'Invalid event data received'})
+        }
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Internal server error' });

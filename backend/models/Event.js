@@ -16,7 +16,7 @@ const eventSchema = new mongoose.Schema({
         required: true
     },
     thumbnail: {
-        type: String, // Store the path to the image file
+        type: String,
         required: true
     },
     eventDateCreated: {
