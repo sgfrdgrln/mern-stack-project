@@ -1,5 +1,4 @@
-const mongoose = require('mongoose')
-
+const mongoose = require('mongoose');
 
 // Define the event schema
 const eventSchema = new mongoose.Schema({
@@ -21,11 +20,19 @@ const eventSchema = new mongoose.Schema({
     },
     eventDateCreated: {
         type: Date,
-        default: Date.now  // Automatically set to the current date/time
+        default: Date.now // Automatically set to the current date/time
+    },
+    eventEndDate: {
+        type: Date,
+        required: true
+    },
+    eventJoinable: {
+        type: Boolean,
+        required: true
     }
 });
 
 // Create the event model
-const Event = mongoose.model('Event', eventSchema)
+const Event = mongoose.model('Event', eventSchema);
 
 module.exports = Event;

@@ -12,8 +12,20 @@ static createEvent = asyncHandler(async (req, res) => {
         await imageProcessing(req, res); // <-- Here's the addition
 
         // Get other fields from request body
-        const { title, description, rtfContent } = req.body;
+        const { title, description, rtfContent, eventJoinable, eventEndDate} = req.body;
 
+            // Initialize eventJoinableValue
+        let eventJoinableValue;
+
+        // Check if eventJoinable is an array
+        if (Array.isArray(eventJoinable)) {
+            // Extract the value of the first element (index 0) from the eventJoinable array
+            [eventJoinableValue] = eventJoinable;
+        } else {
+            // If eventJoinable is not an array, assign its value directly
+            eventJoinableValue = eventJoinable;
+        }
+        
         // Check if event title is a duplicate
         const duplicate = await Event.findOne({ title }).lean().exec();
         if (duplicate) {
@@ -26,12 +38,14 @@ static createEvent = asyncHandler(async (req, res) => {
 
         // Get uploaded file path (if any)
         const thumbnail = req.processedImage ? `uploads/${req.processedImage}` : null;
-
+        
         // Create new event in database
         const event = new Event({
             title,
             description,
             rtfContent,
+            eventEndDate,
+            eventJoinable: eventJoinableValue,
             thumbnail
         });
         await event.save();
@@ -85,11 +99,21 @@ static getAllEvents = asyncHandler(async (req, res) => {
 
 // UPDATE
 static updateEvent = asyncHandler(async (req, res) => {
-    const { id, title, description, rtfContent } = req.body;
+    const { id, title, description, rtfContent, eventJoinable, eventEndDate} = req.body;
 
     if (!id || !title || !description || !rtfContent) {
         return res.status(400).json({ message: 'All fields required' });
     }
+    let eventJoinableValue;
+
+        // Check if eventJoinable is an array
+        if (Array.isArray(eventJoinable)) {
+            // Extract the value of the first element (index 0) from the eventJoinable array
+            [eventJoinableValue] = eventJoinable;
+        } else {
+            // If eventJoinable is not an array, assign its value directly
+            eventJoinableValue = eventJoinable;
+        }
 
     try {
         // Process the image before updating the event
@@ -125,6 +149,8 @@ static updateEvent = asyncHandler(async (req, res) => {
         event.description = description;
         event.rtfContent = rtfContent;
         event.thumbnail = thumbnailPath;
+        event.eventJoinable = eventJoinableValue;
+        event.eventEndDate = eventEndDate;
 
         const updatedEvent = await event.save();
 

@@ -20,7 +20,7 @@ const imageProcessing = async (req, res) => {
     const filename = `${year}-${month}-${day}-${hours}${minutes}${seconds}-${formattedName}`;
     try {
         await sharp(req.file.buffer)
-        .resize({width: 615, height: 350})
+        .resize({width: 720, height: 720})
         .toFile(`./uploads/${filename}`)
         console.log('Image processed successfully:', filename);
         req.processedImage = filename;
