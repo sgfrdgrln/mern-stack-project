@@ -9,10 +9,16 @@ class EventController {
 static createEvent = asyncHandler(async (req, res) => {
     try {
         // Process the image before creating the event
-        await imageProcessing(req, res); // <-- Here's the addition
+        
 
         // Get other fields from request body
         const { title, description, rtfContent, eventJoinable, eventEndDate} = req.body;
+
+        const eventDateCreated = new Date(); // Assuming eventDateCreated is the current date/time
+        if (eventDateCreated > new Date(eventEndDate)) {
+            return res.status(400).json({ message: 'Event creation date cannot be after the event end date' });
+        }
+        await imageProcessing(req, res); // <-- Here's the addition
 
             // Initialize eventJoinableValue
         let eventJoinableValue;

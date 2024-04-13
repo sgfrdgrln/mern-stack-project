@@ -207,6 +207,7 @@ const handleCreateEventSubmit = async () => {
         showAlert("You don't have permission to create an event.", "danger");
       } else {
         console.error('Failed to create event');
+        
       }
     } catch (error) {
       console.error('Error creating event:', error);
