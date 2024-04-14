@@ -17,7 +17,7 @@ router.route('/thumbnail/:id')
 router.route('/')
     .post(verifyRoles(ROLES_LIST.Admin), uploads.single('thumbnail'), imageProcessing, eventsController.createEvent) // Apply upload middleware only to the createEvent route
     .patch(verifyRoles(ROLES_LIST.Admin), uploads.single('thumbnail'), imageProcessing, eventsController.updateEvent)
-
+    .delete(verifyRoles(ROLES_LIST.Admin), eventsController.deleteEvent)
 
 
 // router.route('/:id')
