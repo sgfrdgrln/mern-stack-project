@@ -15,8 +15,9 @@ const eventSchema = new mongoose.Schema({
         required: true
     },
     thumbnail: {
-        type: String,
-        required: true
+        name: String,
+        data: Buffer,
+        contentType: String,
     },
     eventDateCreated: {
         type: Date,
@@ -28,7 +29,7 @@ const eventSchema = new mongoose.Schema({
     },
     eventJoinable: {
         type: Boolean,
-        required: true
+        required: false
     }
 });
 

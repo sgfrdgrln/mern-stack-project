@@ -33,6 +33,7 @@ app.get('/register', (req, res) => {
 app.get('/get-upload', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'sample.html'));
   });
+
 app.use('/uploads', express.static('uploads'))
 app.use('/', require('./routes/root'))
 app.use('/users', require('./routes/userRoutes'))

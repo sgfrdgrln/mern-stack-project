@@ -8,15 +8,16 @@ const verifyRoles = require('../middleware/verifyRoles')
 
 
 
-
-
 router.route('/')
     .get(eventsController.getAllEvents)
+router.route('/thumbnail/:id')
+    .get(eventsController.getEventThumbnail)
     router.use(verifyJWT)
 router.route('/')
     .post(verifyRoles(ROLES_LIST.Admin), uploads.single('thumbnail'), eventsController.createEvent) // Apply upload middleware only to the createEvent route
     .patch(verifyRoles(ROLES_LIST.Admin), uploads.single('thumbnail'), eventsController.updateEvent)
-    .delete(verifyRoles(ROLES_LIST.Admin), eventsController.deleteEvent)
+
+
 
 // router.route('/:id')
 //     .get(usersController.getUser)

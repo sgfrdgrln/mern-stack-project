@@ -7,18 +7,16 @@ const path = require('path')
 class EventController {
 // CREATE
 static createEvent = asyncHandler(async (req, res) => {
-    try {
-        // Process the image before creating the event
-        
-
         // Get other fields from request body
         const { title, description, rtfContent, eventJoinable, eventEndDate} = req.body;
+
+        const { originalname, buffer, mimetype } = req.file;
 
         const eventDateCreated = new Date(); // Assuming eventDateCreated is the current date/time
         if (eventDateCreated > new Date(eventEndDate)) {
             return res.status(400).json({ message: 'Event creation date cannot be after the event end date' });
         }
-        await imageProcessing(req, res); // <-- Here's the addition
+    //    await imageProcessing(req, res); // <-- Here's the addition
 
             // Initialize eventJoinableValue
         let eventJoinableValue;
@@ -36,14 +34,14 @@ static createEvent = asyncHandler(async (req, res) => {
         const duplicate = await Event.findOne({ title }).lean().exec();
         if (duplicate) {
             // If a duplicate title is found, delete the uploaded file
-            if (req.processedImage) {
-                fs.unlinkSync(req.processedImage ? `uploads/${req.processedImage}` : null);
-            }
+            // if (req.processedImage) {
+            //     fs.unlinkSync(req.processedImage ? `uploads/${req.processedImage}` : null);
+            // }
             return res.status(400).json({ message: 'Duplicate title event' });
         }
 
-        // Get uploaded file path (if any)
-        const thumbnail = req.processedImage ? `uploads/${req.processedImage}` : null;
+       
+       
         
         // Create new event in database
         const event = new Event({
@@ -52,7 +50,11 @@ static createEvent = asyncHandler(async (req, res) => {
             rtfContent,
             eventEndDate,
             eventJoinable: eventJoinableValue,
-            thumbnail
+            thumbnail: {
+                name: originalname,
+                data: buffer,
+                contentType: mimetype
+            }
         });
         await event.save();
 
@@ -61,22 +63,35 @@ static createEvent = asyncHandler(async (req, res) => {
         } else {
             res.status(400).json({ message: 'Invalid event data received' });
         }
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Internal server error' });
-    }
 });
 
  
 // READ
 static getAllEvents = asyncHandler(async (req, res) => {
-
     const events = await Event.find();
 
-    if(!events?.length) {
+    if (!events?.length) {
         return res.status(400).json('No events found');
     }
-    res.json(events);
+
+    // Process events to include image data
+    const eventsWithImages = events.map(event => {
+        return {
+            _id: event._id,
+            title: event.title,
+            description: event.description,
+            rtfContent: event.rtfContent,
+            eventEndDate: event.eventEndDate,
+            eventJoinable: event.eventJoinable,
+            // Include image data
+            thumbnail: event.thumbnail ? {
+                data: event.thumbnail.data.toString('base64'), // Convert Buffer to base64 string
+                contentType: event.thumbnail.contentType
+            } : null
+        };
+    });
+
+    res.json(eventsWithImages);
 });
 
 // const createEvent = asyncHandler(async (req, res) => {
@@ -192,6 +207,20 @@ static deleteEvent = asyncHandler(async (req, res) => {
 
     const reply = `Event ${event.title} with ID ${event._id} has been deleted`;
     res.json(reply);
+});
+
+static getEventThumbnail = asyncHandler(async (req, res) => {
+    try {
+        const event = await Event.findById(req.params.id); // Find the event by ID
+        if (!event || !event.thumbnail) {
+            return res.status(404).json({ message: 'Image not found' });
+        }
+        res.set('Content-Type', event.thumbnail.contentType); // Set the Content-Type header
+        res.send(event.thumbnail.data); // Send the image data
+    } catch (error) {
+        console.error('Error fetching image:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 // const updateEventById = asyncHandler(async (req, res) => {
 //     const eventId = req.params.id;
