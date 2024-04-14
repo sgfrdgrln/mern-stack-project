@@ -120,7 +120,7 @@ static getAllEvents = asyncHandler(async (req, res) => {
 
 // UPDATE
 static updateEvent = asyncHandler(async (req, res) => {
-    const { id, title, description, rtfContent, eventJoinable, eventEndDate} = req.body;
+    const { id, title, description, rtfContent, eventJoinable, eventEndDate } = req.body;
 
     if (!id || !title || !description || !rtfContent) {
         return res.status(400).json({ message: 'All fields required' });
@@ -137,41 +137,34 @@ static updateEvent = asyncHandler(async (req, res) => {
         }
 
     try {
-        // Process the image before updating the event
-
-        const duplicate = await Event.findOne({ title }).lean().exec();
-
-        if (duplicate && duplicate._id.toString() !== id) {
-            return res.status(409).json({ message: 'Duplicate title event' });
-        }
-
-        if (req.file) {
-            await imageProcessing(req, res); // <-- Process the image if a new one is provided
-        }
-
-       
-
-        const event = await Event.findById(id).exec();
-
+        // Check if the event exists
+        const event = await Event.findById(id);
         if (!event) {
             return res.status(404).json({ message: 'No event found' });
         }
 
-        let thumbnailPath = event.thumbnail; // Default thumbnail path
-
-        // Check if a new thumbnail is provided
-        if (req.file) {
-            fs.unlinkSync(thumbnailPath); // removes the old file
-            thumbnailPath = req.processedImage ?  `uploads/${req.processedImage}` : null; // Access processed image filename from req object
+        // Check for duplicate title
+        const duplicate = await Event.findOne({ title }).lean().exec();
+        if (duplicate && duplicate._id.toString() !== id) {
+            return res.status(409).json({ message: 'Duplicate title event' });
         }
 
         // Update event fields
         event.title = title;
         event.description = description;
         event.rtfContent = rtfContent;
-        event.thumbnail = thumbnailPath;
         event.eventJoinable = eventJoinableValue;
         event.eventEndDate = eventEndDate;
+
+        // If a new thumbnail is provided, update the thumbnail data
+        if (req.file) {
+            const { originalname, buffer, mimetype } = req.file;
+            event.thumbnail = {
+                name: originalname,
+                data: buffer,
+                contentType: mimetype
+            };
+        }
 
         const updatedEvent = await event.save();
 
@@ -193,14 +186,6 @@ static deleteEvent = asyncHandler(async (req, res) => {
     const event = await Event.findById(id).exec()
     if(!event) {
         return res.status(400).json({message: 'No event found'});
-    }
-
-    const imagePath = path.join( './', event.thumbnail);
-    try {
-        fs.unlinkSync(imagePath);
-        console.log(`Deleted image file: ${imagePath}`);
-    } catch (error) {
-        console.error('Error deleting image file:', error);
     }
 
     await event.deleteOne();
