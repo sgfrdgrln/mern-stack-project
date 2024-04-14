@@ -246,7 +246,7 @@ const handleCreateEventSubmit = async () => {
                 const formattedEndDate = `${year}-${month}-${day}`;
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                <td><img src="/events/thumbnail/${event._id}" alt="Thumbnail" style="max-width: 150px;"></td>
+                <td><img src="data:${event.thumbnail.contentType};base64,${event.thumbnail.data}" alt="Thumbnail" style="max-width: 150px;"></td>
                     <td>${event.title}</td>
                     <td>${event.description}</td>
                     <td>${event.rtfContent}</td>
