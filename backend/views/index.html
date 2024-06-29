@@ -341,6 +341,10 @@ document.addEventListener('DOMContentLoaded', function() {
 };
 });
 
+const joinEvent = (eventId) => {
+    window.location.href = `/register-event?id=${eventId}`;
+  };
+
 function logoutAndRedirect() {
         // Clear the access token from local storage
         localStorage.removeItem('accessToken');

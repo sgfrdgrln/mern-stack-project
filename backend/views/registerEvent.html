@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Event</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+
+    body {
+        background-color: #0f172a;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin-top: 50px;
+    }
+    .card-body {
+        background-color: #1e272e;
+    }
+    .card-header {
+        background-color: #070F2B;
+        color: #FFFFFF;
+    }
+    #teamName {
+        width: 920px;
+    }
+
+    /* Hide the number input arrows */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title" id="eventTitle" style="text-align: center"></h5>
+      </div>
+      <div class="card-body">
+        <p class="card-text" id="eventDescription"></p>
+        <form>
+          <div id="studentIdFields" class="row">
+            <!-- Student ID and IGN fields will be added here -->
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <label for="teamName" style="color: #FFFFFF;" class="form-label">Team Name</label>
+              <input type="text" class="form-control" id="teamName" name="teamName" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // Function to fetch event title based on event ID
+    const fetchEventTitle = async () => {
+      try {
+        // Get event ID from query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('id');
+
+        // Fetch event data
+        const response = await fetch('/events');
+        if (response.ok) {
+          const events = await response.json();
+          // Find the event with the matching ID
+          const event = events.find(event => event._id === eventId);
+          if (event) {
+            // Display event title and description
+            document.getElementById('eventTitle').innerText = event.title;
+           // document.getElementById('eventDescription').innerText = event.description;
+          } else {
+            console.error('Event not found');
+            document.getElementById('eventTitle').innerText = 'Event not found';
+          }
+        } else {
+          console.error('Failed to fetch events:', response.statusText);
+          document.getElementById('eventTitle').innerText = 'Error fetching events';
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        document.getElementById('eventTitle').innerText = 'Error fetching events';
+      }
+    };
+
+    // Function to generate Student ID and IGN fields
+    const generateStudentIdFields = () => {
+      const studentIdFieldsContainer = document.getElementById('studentIdFields');
+      for (let i = 1; i <= 5; i++) {
+        const row = document.createElement('div');
+        row.classList.add('row', 'mb-3');
+
+        const studentIdCol = document.createElement('div');
+        studentIdCol.classList.add('col');
+        studentIdCol.innerHTML = `
+          <label for="studentId${i}" style="color: #FFFFFF;" class="form-label">Student ID ${i}</label>
+          <input type="number" class="form-control" id="studentId${i}" name="studentId${i}" required>
+        `;
+        row.appendChild(studentIdCol);
+
+        const ignCol = document.createElement('div');
+        ignCol.classList.add('col');
+        ignCol.innerHTML = `
+          <label for="ign${i}" style="color: #FFFFFF;" class="form-label">IGN ${i}</label>
+          <input type="text" class="form-control" id="ign${i}" name="ign${i}" required>
+        `;
+        row.appendChild(ignCol);
+
+        studentIdFieldsContainer.appendChild(row);
+      }
+    };
+
+    // Fetch event title when the page loads
+    fetchEventTitle();
+
+    // Generate Student ID and IGN fields when the page loads
+    generateStudentIdFields();
+  </script>
+</body>
+</html>
